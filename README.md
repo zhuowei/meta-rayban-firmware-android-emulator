@@ -1,6 +1,10 @@
 Scripts to repack a Meta Ray-Ban Display firmware to boot in Android Emulator (on an Apple Silicon Mac)
 
-This doesn't work yet. It gets to the "There's an internal problem with your device." screen that always shows when vendor and system doesn't match, then blank screens because `com.oculus.arwireless` fails to start. It's possible to work around this state by installing a custom launcher such as Lawnchair.
+This doesn't quite work yet. It gets to the "There's an internal problem with your device." screen that always shows when vendor and system doesn't match, then blank screens because the initial setup app crashes.
+
+You can force the homescreen to start by `adb shell am start com.meta.smartglass.app.systemui`.
+
+## Building
 
 You need:
 
@@ -23,18 +27,20 @@ In Linux:
 
 `~/Library/Android/sdk/emulator/emulator -avd Greatwhite -show-kernel -sysdir greatwhite_sim -selinux permissive -accel on`
 
-For working around blank screen:
+## Tips
 
-1) set property to use the newer Nexus stack so ArWireless freezes instead of crashing
-2) install a custom launcher such as Lawnchair: https://github.com/LawnchairLauncher/lawnchair/releases/tag/nightly
+Once you get to the blank screen, start the glasses' launcher manually by
+
+`adb shell am start com.meta.smartglass.app.systemui`
+
+You may also want to install a custom launcher such as Lawnchair: https://github.com/LawnchairLauncher/lawnchair/releases/tag/nightly
 
 ```
-adb root
 adb install Lawnchair.Debug.15-dev.Nightly-CI_2909-67b9051.apk
 adb shell
 am start app.lawnchair.nightly
 ```
 
-(tap the power button if nothing shows up)
+Tap the power button if nothing shows up.
 
 Tapping "Launcher" in Lawnchair to bring up the glasses' actual launcher.

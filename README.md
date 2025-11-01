@@ -4,6 +4,27 @@ This doesn't quite work yet. It gets to the "There's an internal problem with yo
 
 You can force the homescreen to start by `adb shell am start com.meta.smartglass.app.systemui`.
 
+## Running
+
+You need:
+
+- an Apple Silicon Mac with Android Studio, "Android 14 - Google APIs ARM 64 v8a System Image" installed
+  (`https://dl.google.com/android/repository/sys-img/google_apis/arm64-v8a-34_r14.zip`), and an AVD created
+
+On macOS:
+
+- in Android Studio's Device Manager, create a virtual device for Android 14, Google APIs
+- extract the repacked firmware
+- start the emulator with the copy of the emulator image:
+
+`~/Library/Android/sdk/emulator/emulator -avd Greatwhite -show-kernel -sysdir greatwhite_sim -selinux permissive -accel on -prop qemu.sf.lcd_density=160 -skin 600x600`
+
+Once you get to the "There's an internal problem with your device." screen, start the glasses' launcher manually by
+
+`adb shell am start com.meta.smartglass.app.systemui`
+
+For more information, see https://notnow.dev/zhuowei
+
 ## Building
 
 You need:
@@ -23,9 +44,7 @@ In Linux:
 - `make`
 - make a copy of the emulator image
 - take `out/output/system.img` and replace `system.img` with it
-- start the emulator with the copy of the emulator image:
-
-`~/Library/Android/sdk/emulator/emulator -avd Greatwhite -show-kernel -sysdir greatwhite_sim -selinux permissive -accel on -prop qemu.sf.lcd_density=160 -skin 600x600`
+- transfer the emulator image back to macOS
 
 ## Tips
 

@@ -14,11 +14,13 @@ out/avd/vendor.img: out/avd/super.img
 	# emulator's vendor turns on apex; don't let it
 	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/vendor.img
 
-# we need to patch out security_setenforce: selinux_boolean_sub conveniently always returns 0 and has the exact same name length.
+# we need to patch out security_setenforce: security_getenforce conveniently returns 0 when it's not enforcing...
 out/fb/system.img: fb/system.img
-	mkdir -p out/fb/tempmnt
-	cp fb/system.img out/fb/system.img
-	LC_ALL=C sed -i -e "s/security_getenforce\x00security_setenforce\x00/security_getenforce\x00selinux_boolean_sub\x00/" out/fb/system.img
+	mkdir -p out/fb
+	LC_ALL=C sed -e "s/security_getenforce\x00security_setenforce\x00/security_getenforce\x00security_getenforce\x00/" \
+		-e "s/^ro.adb.secure=1$$/ro.adb.secure=0/" \
+		-e "s/^ro.debuggable=0$$/ro.debuggable=1/" \
+		fb/system.img > out/fb/system.img
 
 out/repack/super.img: out/avd/system_dlkm.img out/avd/vendor.img out/fb/system.img fb/system_ext.img fb/product.img
 	# TODO(zhuowei): emulator doesn't have an odm partition
@@ -32,7 +34,7 @@ out/repack/super.img: out/avd/system_dlkm.img out/avd/vendor.img out/fb/system.i
 		--partition=system_ext:readonly:$$(stat -c "%s" fb/system_ext.img):emulator_dynamic_partitions \
 		--partition=product:readonly:$$(stat -c "%s" fb/product.img):emulator_dynamic_partitions \
 		--partition=vendor:readonly:$$(stat -c "%s" out/avd/vendor.img):emulator_dynamic_partitions \
-		--image=system=fb/system.img \
+		--image=system=out/fb/system.img \
 		--image=system_dlkm=out/avd/system_dlkm.img \
 		--image=system_ext=fb/system_ext.img \
 		--image=product=fb/product.img \

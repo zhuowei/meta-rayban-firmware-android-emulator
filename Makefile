@@ -11,8 +11,11 @@ out/avd/system_dlkm.img: out/avd/super.img
 	$(LPUNPACK) -p system_dlkm out/avd/super.img out/avd
 out/avd/vendor.img: out/avd/super.img
 	$(LPUNPACK) -p vendor out/avd/super.img out/avd
-	# emulator's vendor turns on apex; don't let it
+# emulator's vendor turns on apex; don't let it
 	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/vendor.img
+# temperature service crashes in Temperature.readVectorFromParcel
+	debugfs -w -R "rm etc/init/android.hardware.thermal@2.0-service.rc" out/avd/vendor.img
+	debugfs -w -R "rm etc/vintf/manifest/android.hardware.thermal@2.0-service.xml" out/avd/vendor.img
 
 # we need to patch out security_setenforce: security_getenforce conveniently returns 0 when it's not enforcing...
 out/fb/system.img: fb/system.img

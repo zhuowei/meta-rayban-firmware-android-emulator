@@ -1,7 +1,17 @@
+# run with root.
+
 LPUNPACK=../lpunpack_and_lpmake/bin/lpunpack
 LPMAKE=../lpunpack_and_lpmake/bin/lpmake
 
 all: out/output/system.img
+
+VENDOR_FILES := lib64/libosutils.so lib64/vendor.oculus.hardware.wifi@1.0.so \
+	bin/hw/vendor.oculus.hardware.wifi@1.0-service etc/init/vendor.oculus.hardware.wifi@1.0-service.rc \
+	etc/vintf/manifest/vendor.oculus.hardware.wifi@1.0-service.xml \
+	lib64/android.hardware.wifi.hostapd@1.1.so lib64/android.hardware.wifi.hostapd@1.0.so \
+	lib64/android.hardware.wifi.supplicant@1.0.so lib64/libwpa_client.so \
+	etc/passwd etc/group
+
 
 # sgdisk -p system.img shows super starts on sector 4096
 out/avd/super.img: avd/system.img
@@ -9,13 +19,32 @@ out/avd/super.img: avd/system.img
 	dd if=avd/system.img bs=16M iflag=skip_bytes skip=$$((4096*512)) of=out/avd/super.img
 out/avd/system_dlkm.img: out/avd/super.img
 	$(LPUNPACK) -p system_dlkm out/avd/super.img out/avd
-out/avd/vendor.img: out/avd/super.img
+
+out/fb/vendor: fb/vendor.img
+	rm -rf out/fb/vendor
+	7z -oout/fb/vendor x fb/vendor.img $(VENDOR_FILES)
+
+out/avd/vendor.img: out/avd/super.img out/fb/vendor
 	$(LPUNPACK) -p vendor out/avd/super.img out/avd
+	truncate -s 100M -c out/avd/vendor.img
+	resize2fs out/avd/vendor.img
+# https://x.com/topjohnwu/status/1170404631865778177
+	e2fsck -E unshare_blocks out/avd/vendor.img
+	mkdir -p out/avd/tempmnt_vendor out/fb/tempmnt_vendor
+	mount -o rw,loop out/avd/vendor.img out/avd/tempmnt_vendor
+	mount -o ro,loop fb/vendor.img out/fb/tempmnt_vendor
 # emulator's vendor turns on apex; don't let it
-	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/vendor.img
+	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/tempmnt_vendor/build.prop
 # temperature service crashes in Temperature.readVectorFromParcel
-	debugfs -w -R "rm etc/init/android.hardware.thermal@2.0-service.rc" out/avd/vendor.img
-	debugfs -w -R "rm etc/vintf/manifest/android.hardware.thermal@2.0-service.xml" out/avd/vendor.img
+	rm out/avd/tempmnt_vendor/etc/init/android.hardware.thermal@2.0-service.rc out/avd/tempmnt_vendor/etc/vintf/manifest/android.hardware.thermal@2.0-service.xml
+	for i in $(VENDOR_FILES); do \
+		cp -a out/fb/tempmnt_vendor/$$i out/avd/tempmnt_vendor/$$i ; \
+	done
+	echo "/(vendor|system/vendor)/bin/hw/vendor\.oculus\.hardware\.wifi@1\.0-service           u:object_r:hal_wifi_default_exec:s0" \
+		>> out/avd/tempmnt_vendor/etc/selinux/vendor_file_contexts
+	chcon u:object_r:hal_wifi_default_exec:s0 out/avd/tempmnt_vendor/bin/hw/vendor.oculus.hardware.wifi@1.0-service
+	umount out/avd/tempmnt_vendor
+	umount out/fb/tempmnt_vendor
 
 # we need to patch out security_setenforce: security_getenforce conveniently returns 0 when it's not enforcing...
 out/fb/system.img: fb/system.img

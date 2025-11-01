@@ -9,7 +9,7 @@ You need:
   (`https://dl.google.com/android/repository/sys-img/google_apis/arm64-v8a-34_r14.zip`), and an AVD created
 - https://github.com/LonelyFool/lpunpack_and_lpmake
   (You may need https://github.com/LonelyFool/lpunpack_and_lpmake/pull/24 to fix the build)
-- a Linux computer/VM to repack the system image
+- a Linux computer/VM to repack the system image. (I use Ubuntu 25.04 in a VMWare Fusion virual machine)
 
 In Linux:
 
@@ -30,12 +30,11 @@ For working around blank screen:
 
 ```
 adb root
-adb shell setprop persist.vendor.meta.atc.enable_nexus true
-adb shell stop
-adb shell start
 adb install Lawnchair.Debug.15-dev.Nightly-CI_2909-67b9051.apk
 adb shell
 am start app.lawnchair.nightly
 ```
 
 (tap the power button if nothing shows up)
+
+Tapping "Launcher" in Lawnchair to bring up the glasses' actual launcher.

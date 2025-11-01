@@ -11,6 +11,9 @@ out/avd/system_dlkm.img: out/avd/super.img
 	$(LPUNPACK) -p system_dlkm out/avd/super.img out/avd
 out/avd/vendor.img: out/avd/super.img
 	$(LPUNPACK) -p vendor out/avd/super.img out/avd
+	# emulator's vendor turns on apex; don't let it
+	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/vendor.img
+
 out/repack/super.img: out/avd/system_dlkm.img out/avd/vendor.img
 	# TODO(zhuowei): emulator doesn't have an odm partition
 	mkdir -p out/repack

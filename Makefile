@@ -19,6 +19,8 @@ VENDOR_FILES := lib64/libosutils.so lib64/vendor.oculus.hardware.wifi@1.0.so \
 	lib64/vendor.qti.hardware.bluetooth_sar@1.1.so \
 	lib64/vendor.qti.hardware.btconfigstore@1.0.so \
 	lib64/vendor.qti.hardware.btconfigstore@2.0.so \
+	lib64/hw/vendor.qti.hardware.btconfigstore@1.0-impl.so \
+	lib64/hw/vendor.qti.hardware.btconfigstore@2.0-impl.so \
 	lib64/libqti_vndfwk_detect_vendor.so \
 	lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so \
 	lib64/libdiag.so \

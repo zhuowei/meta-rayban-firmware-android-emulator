@@ -39,7 +39,7 @@ You need:
 In Linux:
 
 - build `lpunpack_and_lpmake`
-- in fb/, put `system.img`, `system_ext.img`, and `product.img` from the extracted Meta Ray-Ban firmware
+- in fb/, put `system.img`, `system_ext.img`, `product.img` and `vendor.img` from the extracted Meta Ray-Ban firmware
 - in avd/, put `system.img` from the Android Emulator image (`~/Library/Android/sdk/system-images/android-34/google_apis/arm64-v8a`)
 - `make`
 - make a copy of the emulator image

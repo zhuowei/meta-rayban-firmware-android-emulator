@@ -10,7 +10,28 @@ VENDOR_FILES := lib64/libosutils.so lib64/vendor.oculus.hardware.wifi@1.0.so \
 	etc/vintf/manifest/vendor.oculus.hardware.wifi@1.0-service.xml \
 	lib64/android.hardware.wifi.hostapd@1.1.so lib64/android.hardware.wifi.hostapd@1.0.so \
 	lib64/android.hardware.wifi.supplicant@1.0.so lib64/libwpa_client.so \
-	etc/passwd etc/group
+	etc/passwd etc/group \
+	bin/hw/android.hardware.bluetooth@1.0-service-qti \
+	lib64/android.hardware.bluetooth@1.0.so \
+	lib64/vendor.qti.hardware.bluetooth_offload@1.0.so \
+	lib64/hw/vendor.qti.hardware.bluetooth_offload@1.0-impl.so \
+	lib64/vendor.qti.hardware.bluetooth_sar@1.0.so \
+	lib64/vendor.qti.hardware.bluetooth_sar@1.1.so \
+	lib64/vendor.qti.hardware.btconfigstore@1.0.so \
+	lib64/vendor.qti.hardware.btconfigstore@2.0.so \
+	lib64/libqti_vndfwk_detect_vendor.so \
+	lib64/hw/android.hardware.bluetooth@1.0-impl-qti.so \
+	lib64/libdiag.so \
+	lib64/libqmi_cci.so \
+	lib64/libqmi_encdec.so \
+	lib64/libbtnv.so \
+	lib64/libsoc_helper.so \
+	etc/init/android.hardware.bluetooth@1.0-service-qti.rc
+
+VENDOR_REMOVE := etc/init/android.hardware.thermal@2.0-service.rc \
+	etc/vintf/manifest/android.hardware.thermal@2.0-service.xml \
+	etc/vintf/manifest/bluetooth-service-default.xml \
+	etc/init/bluetooth-service-default.rc
 
 
 # sgdisk -p system.img shows super starts on sector 4096
@@ -24,9 +45,9 @@ out/fb/vendor: fb/vendor.img
 	rm -rf out/fb/vendor
 	7z -oout/fb/vendor x fb/vendor.img $(VENDOR_FILES)
 
-out/avd/vendor.img: out/avd/super.img out/fb/vendor
+out/avd/vendor.img: out/avd/super.img out/fb/vendor files/manifest_bluetooth.xml
 	$(LPUNPACK) -p vendor out/avd/super.img out/avd
-	truncate -s 100M -c out/avd/vendor.img
+	truncate -s 200M -c out/avd/vendor.img
 	resize2fs out/avd/vendor.img
 # https://x.com/topjohnwu/status/1170404631865778177
 	e2fsck -E unshare_blocks out/avd/vendor.img
@@ -36,10 +57,13 @@ out/avd/vendor.img: out/avd/super.img out/fb/vendor
 # emulator's vendor turns on apex; don't let it
 	LC_ALL=C sed -i -e "s/ro.apex.updatable=true/#o.apex.updatable=true/" out/avd/tempmnt_vendor/build.prop
 # temperature service crashes in Temperature.readVectorFromParcel
-	rm out/avd/tempmnt_vendor/etc/init/android.hardware.thermal@2.0-service.rc out/avd/tempmnt_vendor/etc/vintf/manifest/android.hardware.thermal@2.0-service.xml
+	for i in $(VENDOR_REMOVE); do \
+		rm out/avd/tempmnt_vendor/$$i ; \
+	done
 	for i in $(VENDOR_FILES); do \
 		cp -a out/fb/tempmnt_vendor/$$i out/avd/tempmnt_vendor/$$i ; \
 	done
+	cp files/manifest_bluetooth.xml out/avd/tempmnt_vendor/etc/vintf/manifest/
 	echo "/(vendor|system/vendor)/bin/hw/vendor\.oculus\.hardware\.wifi@1\.0-service           u:object_r:hal_wifi_default_exec:s0" \
 		>> out/avd/tempmnt_vendor/etc/selinux/vendor_file_contexts
 	chcon u:object_r:hal_wifi_default_exec:s0 out/avd/tempmnt_vendor/bin/hw/vendor.oculus.hardware.wifi@1.0-service

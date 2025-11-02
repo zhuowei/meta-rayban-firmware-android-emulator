@@ -15,9 +15,10 @@ On macOS:
 
 - in Android Studio's Device Manager, create a virtual device for Android 14, Google APIs
 - extract the repacked firmware
+- close all existing Android Emulators.
 - start the emulator with the copy of the emulator image:
 
-`~/Library/Android/sdk/emulator/emulator -avd Greatwhite -show-kernel -sysdir greatwhite_sim -selinux permissive -accel on -prop qemu.sf.lcd_density=160 -skin 600x600`
+`~/Library/Android/sdk/emulator/emulator -avd Greatwhite -show-kernel -sysdir greatwhite_sim -selinux permissive -accel on -prop qemu.sf.lcd_density=160 -skin 600x600 -netsim-args "--config $PWD/greatwhite_sim/custom_netsim_config.json"`
 
 Once you get to the "There's an internal problem with your device." screen, start the glasses' launcher manually by
 
@@ -48,6 +49,7 @@ In Linux:
 - make a copy of the emulator image
 - take `out/output/system.img` and replace `system.img` with it
 - transfer the emulator image back to macOS (`rsync --inplace jane.local:~/greatwhite_sim/out/output/system.img ./greatwhite_sim/`)
+- also copy `files/custom_netsim_config.json` into `greatwhite_sim`.
 
 ## Tips
 

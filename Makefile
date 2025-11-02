@@ -55,6 +55,9 @@ out/avd/vendor.img: out/avd/super.img fb/vendor.img files/manifest_bluetooth.xml
 	echo "/(vendor|system/vendor)/bin/hw/vendor\.oculus\.hardware\.wifi@1\.0-service           u:object_r:hal_wifi_default_exec:s0" \
 		>> out/avd/tempmnt_vendor/etc/selinux/vendor_file_contexts
 	chcon u:object_r:hal_wifi_default_exec:s0 out/avd/tempmnt_vendor/bin/hw/vendor.oculus.hardware.wifi@1.0-service
+	LC_ALL=C sed -i -e "s@chown root system /sys/power/wake_lock@#hown root system /sys/power/wake_lock@" \
+		-e "s@chown root system /sys/power/wake_unlock@#hown root system /sys/power/wake_unlock@" \
+		out/avd/tempmnt_vendor/etc/init/hw/init.ranchu.rc
 	umount out/avd/tempmnt_vendor
 	umount out/fb/tempmnt_vendor
 	umount out/avd13/tempmnt_vendor

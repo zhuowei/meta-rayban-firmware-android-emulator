@@ -29,11 +29,7 @@ out/avd/super.img: avd/system.img
 out/avd/system_dlkm.img: out/avd/super.img
 	$(LPUNPACK) -p system_dlkm out/avd/super.img out/avd
 
-out/fb/vendor: fb/vendor.img
-	rm -rf out/fb/vendor
-	7z -oout/fb/vendor x fb/vendor.img $(VENDOR_FILES)
-
-out/avd/vendor.img: out/avd/super.img out/fb/vendor files/manifest_bluetooth.xml avd13/vendor.img
+out/avd/vendor.img: out/avd/super.img fb/vendor.img files/manifest_bluetooth.xml avd13/vendor.img
 	$(LPUNPACK) -p vendor out/avd/super.img out/avd
 	truncate -s 200M -c out/avd/vendor.img
 	resize2fs out/avd/vendor.img
@@ -70,6 +66,8 @@ out/fb/system.img: fb/system.img
 		-e "s/^ro.adb.secure=1$$/ro.adb.secure=0/" \
 		-e "s/^ro.debuggable=0$$/ro.debuggable=1/" \
 		fb/system.img > out/fb/system.img
+	debugfs -w -R "mkdir system/lib" out/fb/system.img
+	debugfs -w -R "symlink system/lib/modules /system_dlkm/lib/modules" out/fb/system.img
 
 out/repack/super.img: out/avd/system_dlkm.img out/avd/vendor.img out/fb/system.img fb/system_ext.img fb/product.img
 	# TODO(zhuowei): emulator doesn't have an odm partition
@@ -103,6 +101,6 @@ out/output/system.img: avd/system.img out/repack/super.img
 	dd if=out/repack/super.img bs=16M oflag=seek_bytes seek=$$((4096*512)) conv=notrunc of=$@
 
 clean:
-	umount -q out/fb/tempmnt_vendor
-	umount -q out/avd/tempmnt_vendor
+	umount -q out/fb/tempmnt_vendor || true
+	umount -q out/avd/tempmnt_vendor || true
 	rm -rf out
